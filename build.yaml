@@ -1,0 +1,23 @@
+---
+default:
+    - debug: true
+      open: public/Tester.swf
+      extras: -use-network=false -static-link-runtime-shared-libraries
+    
+# library-path:
+#     - source/swc
+# 
+source-path:
+    - source/classes
+    
+applications:
+    - class: source/classes/Tester.as
+      output: public/Tester.swf
+      # exclude: source/classes/Other.as
+
+# asdoc:
+#     title: "My ActionScript project"
+#     footer: "My ActionScript project footer"
+#     output: docs/
+#     exclude-dirs: 
+#       - source/classes/caurina/
