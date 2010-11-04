@@ -3,6 +3,7 @@ AS3 YAML parser based on https://github.com/visionmedia/js-yaml/
 
 # Usage:
 
+<pre><code>
 var loader:URLLoader = new URLLoader(new URLRequest("test.yaml"));
 loader.addEventListener(Event.COMPLETE, function(e:Event):void{
 	
@@ -10,6 +11,7 @@ loader.addEventListener(Event.COMPLETE, function(e:Event):void{
 	//And you're done
 	
 })
+</code></pre>
 
 # License 
 
