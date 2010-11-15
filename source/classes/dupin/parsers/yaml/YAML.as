@@ -30,7 +30,7 @@ package dupin.parsers.yaml
 		  ['multilineString', /^\|\s*/],
 		  ['float', /^(\d+\.\d+)/],
 		  ['int', /^(\d+)/],
-		  ['id', /^([\w ]+)/],
+		  ['id', /^([\w ]+)\s*:/],
 		  ['doc', /^---/],
 		  [',', /^,/],
 		  ['{', /^\{/],
@@ -39,7 +39,7 @@ package dupin.parsers.yaml
 		  [']', /^\]/],
 		  ['-', /^\-/],
 		  [':', /^[:]/],
-		  ['string', /^(.*)/],
+			['string', /^(.*)/],
 		]
 		protected var tokens:Array;
 		
@@ -320,7 +320,12 @@ package dupin.parsers.yaml
 		    for (var i:int = 0, len:int = grammarTokens.length; i < len; ++i)
 		      if ((captures = grammarTokens[i][1].exec(str)) != null) {
 		        token = [grammarTokens[i][0], captures],
-		        str = str.replace(grammarTokens[i][1], '')
+						str = str.replace(grammarTokens[i][1], '');
+						
+						//Modified id regexp, so it will consider ':', avoiding confusion with strings
+						if(grammarTokens[i][0] == 'id')
+		        	str = ':' + str;
+							
 		        switch (token[0]) {
 		          case 'comment':
 		            ignore = true

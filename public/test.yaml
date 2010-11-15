@@ -1,5 +1,6 @@
 id: 'loader'
 servicePath: /
+key: my duh dah dih with spaces
 parameter:
    basePath: "."
    #Comment
@@ -7,6 +8,8 @@ parameter:
    friendsServicePath: "%(servicePath)sfriends.json"
    questionSendingServicePath: "%(servicePath)squiz/[group]/[question].json"
    answerServicePath: "%(servicePath)squiz/answers.json"
+   idWithSpace : "%(servicePath)squiz/answers.json"
+# Another comment
    multilineText: |
     Yooooo
     "Multiline!"
