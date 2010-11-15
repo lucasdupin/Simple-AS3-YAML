@@ -27,6 +27,7 @@ package dupin.parsers.yaml
 		  ['true', /^(enabled|true|yes|on)/],
 		  ['false', /^(disabled|false|no|off)/],
 		  ['string', /^["|'](.*?)["|']/], //' Duh, syntax highligthing
+		  ['multilineString', /^\|\s*/],
 		  ['float', /^(\d+\.\d+)/],
 		  ['int', /^(\d+)/],
 		  ['id', /^([\w ]+)/],
@@ -156,6 +157,7 @@ package dupin.parsers.yaml
 		 * | hash
 		 * | inlineHash
 		 * | string
+		 * | multilineString
 		 * | float
 		 * | int
 		 * | true
@@ -165,25 +167,27 @@ package dupin.parsers.yaml
 		protected function parse():* {
 		  switch (this.peek()[0]) {
 		    case 'doc':
-		      return this.parseDoc()
+		      return this.parseDoc();
 		    case '-':
-		      return this.parseList()
+		      return this.parseList();
 		    case '{':
-		      return this.parseInlineHash()
+		      return this.parseInlineHash();
 		    case '[':
-		      return this.parseInlineList()
+		      return this.parseInlineList();
 		    case 'id':
-		      return this.parseHash()
+		      return this.parseHash();
+			case 'multilineString':
+			  return this.parseMultilineString();
 		    case 'string':
-		      return this.advanceValue()
-		    case 'float':
-		      return parseFloat(this.advanceValue())
+		      return this.advanceValue();
+			case 'float':
+		      return parseFloat(this.advanceValue());
 		    case 'int':
-		      return parseInt(this.advanceValue())
+		      return parseInt(this.advanceValue());
 		    case 'true':
-		      return true
+		      return true;
 		    case 'false':
-		      return false
+		      return false;
 		  }
 		}
 
@@ -240,6 +244,24 @@ package dupin.parsers.yaml
 		    ++i
 		  }
 		  return hash
+		}
+		
+		
+		/**
+		 * '{' (- ','? ws id ':' - expr ws)* '}'
+		 */
+
+		protected function parseMultilineString():String {
+			var result:String="";
+			this.advanceValue(); //ignore first | (pipe)
+			while (!this.accept('dedent')) {
+				this.ignoreWhitespace();
+				result += this.advanceValue() + "\n";
+			}
+			//Remove last space
+			result = result.substr(0, result.length-1);
+			
+			return result;
 		}
 
 		/**
@@ -302,7 +324,7 @@ package dupin.parsers.yaml
 		        switch (token[0]) {
 		          case 'comment':
 		            ignore = true
-		            break
+		            break;
 		          case 'indent':
 		            lastIndents = indents
 		            indents = token[1][1].length / 2
@@ -317,6 +339,7 @@ package dupin.parsers.yaml
 		              while (--lastIndents > 0)
 		                stack.push(token)
 		            }
+					break;
 		        }
 		        break
 		      }

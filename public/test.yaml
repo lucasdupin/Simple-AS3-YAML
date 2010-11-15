@@ -2,8 +2,11 @@ id: 'loader'
 servicePath: /
 parameter:
    basePath: "."
-   #localePath: "http://assets.idadeinterior.com.br/data/locales/%(locale)s"
+   #Comment
    userDataServicePath: "%(servicePath)susers.json"
    friendsServicePath: "%(servicePath)sfriends.json"
    questionSendingServicePath: "%(servicePath)squiz/[group]/[question].json"
    answerServicePath: "%(servicePath)squiz/answers.json"
+   multilineText: |
+    Yooooo
+    "Multiline!"
