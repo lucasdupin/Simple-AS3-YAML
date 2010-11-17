@@ -44,16 +44,24 @@ package dupin.parsers.yaml
 		protected var tokens:Array;
 		
 
-		public function YAML(tokens:String)
+		public function YAML(yaml:String)
 		{
-			tokens = cleanUp(tokens);
-			this.tokens = tokenize(tokens);
+			yaml = preProcess(yaml);
+			this.tokens = tokenize(yaml);
 		}
 		
-		public function cleanUp(tokens:String):String
+		public function preProcess(yaml:String):String
 		{
-			//TODO cleanup comments and whitelines before actual parsing
-			return tokens;
+			// Remove comments
+			//yaml = yaml.replace(/#[^\"\n]+\n/g, "\n");
+
+			// Removes empty lines
+			yaml = yaml.replace(/^\s*$\n/gm, "");
+
+			// Remove white characters before line breaks (trailing spaces)
+			yaml = yaml.replace(/\s+$/gm, "");
+			
+			return yaml;
 		}
 
 		public static function decode(str:String):*
