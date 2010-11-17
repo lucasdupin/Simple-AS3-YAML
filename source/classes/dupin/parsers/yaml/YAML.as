@@ -22,8 +22,8 @@ package dupin.parsers.yaml
 
 		protected const grammarTokens:Array = [
 		  ['comment', /^#[^\n]*/],
-		  ['indent', /^\n( *)/],
-		  ['space', /^ +/],
+		  ['indent', /^\n(\s*)/],
+		  ['space', /^\s+/],
 		  ['true', /^(enabled|true|yes|on)/],
 		  ['false', /^(disabled|false|no|off)/],
 		  ['string', /^["|'](.*?)["|']/], //' Duh, syntax highligthing
@@ -46,7 +46,14 @@ package dupin.parsers.yaml
 
 		public function YAML(tokens:String)
 		{
+			tokens = cleanUp(tokens);
 			this.tokens = tokenize(tokens);
+		}
+		
+		public function cleanUp(tokens:String):String
+		{
+			//TODO cleanup comments and whitelines before actual parsing
+			return tokens;
 		}
 
 		public static function decode(str:String):*
@@ -185,8 +192,10 @@ package dupin.parsers.yaml
 		    case 'int':
 		      return parseInt(this.advanceValue());
 		    case 'true':
+			  this.advance();
 		      return true;
 		    case 'false':
+			  this.advance();
 		      return false;
 		  }
 		}

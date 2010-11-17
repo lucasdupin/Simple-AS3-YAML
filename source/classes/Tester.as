@@ -1,8 +1,9 @@
 package
 {	
-	import flash.display.*;
-	import flash.net.*;
-	import flash.events.*;
+	import flash.display.Sprite;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
+	import flash.events.Event;
 	import dupin.parsers.yaml.YAML;
 	
 	public class Tester extends Sprite
@@ -10,27 +11,29 @@ package
 
 		public function Tester()
 		{
-			trace("Tester::Tester()", "loading YAML");
-			var loader:URLLoader = new URLLoader(new URLRequest("test.yaml"));
-			loader.addEventListener(Event.COMPLETE, function(e:Event):void{
-				
-				trace("Tester::Tester()", "Loaded... parsing...");
-				var o:* = YAML.decode(loader.data);
-
-				var miner:Function = function(what:Object, index:int):void{
-					for (var p:String in what)
-					{
-						for(var spaces:Array = [], i:int=0; i< index; i++) spaces.push("\t");
-						trace(spaces.join(''), p, "=", what[p]);
-						
-						if (what[p].toString().indexOf("[object Object]") == 0)
-						{
-							miner(what[p], index+1);
-						}
-					}
-				}
-				miner(o, 0);
-			})
+			trace("Loading YAML");
+			var urlLoader:URLLoader = new URLLoader(new URLRequest("test.yaml"));
+			urlLoader.addEventListener(Event.COMPLETE, onLoadComplete);
+		}
+		
+		public function onLoadComplete(e:Event):void
+		{
+			trace("Load completed, parsing.");
+			var obj:Object = YAML.decode(e.target.data);
+			
+			recursiveTraceProperties(obj);
+			
+		}
+		
+		public function recursiveTraceProperties(obj:Object, depth:int = 0, textPadding:String = ""):void
+		{
+			if(depth > 5) return;
+			
+			for (var key:String in obj)
+			{
+				trace(textPadding + key + ": " + obj[key]);
+				recursiveTraceProperties(obj[key], depth + 1, textPadding + "\t");
+			}
 		}
 
 	}
