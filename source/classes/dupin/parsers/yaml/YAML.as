@@ -46,16 +46,9 @@ package dupin.parsers.yaml
 
 		public function YAML(tokens:String)
 		{
-			tokens = cleanUp(tokens);
 			this.tokens = tokenize(tokens);
 		}
 		
-		public function cleanUp(tokens:String):String
-		{
-			//TODO cleanup comments and whitelines before actual parsing
-			return tokens;
-		}
-
 		public static function decode(str:String):*
 		{
 			return new YAML(str).parse();
