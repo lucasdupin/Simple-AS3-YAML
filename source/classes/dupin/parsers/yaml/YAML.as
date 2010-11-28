@@ -39,16 +39,22 @@ package dupin.parsers.yaml
 		  [']', /^\]/],
 		  ['-', /^\-/],
 		  [':', /^[:]/],
-			['string', /^(.*)/],
+		  ['string', /^(.*)/],
 		]
 		protected var tokens:Array;
 		
-
+		/**
+		 * Receives a string and breaks it into tokens
+		 * @constructor
+		 */
 		public function YAML(tokens:String)
 		{
 			this.tokens = tokenize(tokens);
 		}
 		
+		/**
+		 * Transform tokens into objects
+		 */
 		public static function decode(str:String):*
 		{
 			return new YAML(str).parse();
@@ -59,8 +65,8 @@ package dupin.parsers.yaml
 		  str = str
 		    .slice(0, 25)
 		    .replace(/\n/g, '\\n')
-		    .replace(/"/g, '\\\"')
-		  return 'near "' + str + '"'
+		    .replace(/"/g, '\\\"');
+		  return 'near "' + str + '"';
 		}
 		
 		/**
@@ -87,10 +93,9 @@ package dupin.parsers.yaml
 		 * Advance and return the token's value.
 		 *
 		 * @return {mixed}
-		 * @api private
 		 */
-		private function advanceValue():* {
-		  return this.advance()[1][1]
+		protected function advanceValue():* {
+		  return this.advance()[1][1];
 		}
 		
 		/**
@@ -98,7 +103,6 @@ package dupin.parsers.yaml
 		 *
 		 * @param  {string} type
 		 * @return {bool}
-		 * @api private
 		 */
 		protected function accept(type:String):* {
 		  if (this.peekType(type))
@@ -112,19 +116,21 @@ package dupin.parsers.yaml
 		 *
 		 * @param  {string} type
 		 * @param  {string} msg
-		 * @api private
 		 */
 		protected function expect(type:String, msg:String):void {
-		  if (accept(type)) return;
+			if (accept(type)) return;
+				
+			var near:String = '';
+			if(this.peek())
+				near = peek()[1].hasOwnProperty('input') ? this.peek()[1].input : this.peek()[1];
 		
-		  throw new Error(msg + (this.peek() ? ', ' + context(this.peek()[1].input) : ''));
+			throw new Error(msg +  ', ' +  near);
 		}
 
 		/**
 		 * Return the next token type.
 		 *
 		 * @return {string}
-		 * @api private
 		 */
 		protected function peekType(val:String):Boolean {
 		  return this.tokens[0] &&
@@ -201,7 +207,7 @@ package dupin.parsers.yaml
 		  this.accept('doc');
 		  this.expect('indent', 'expected indent after document');
 		  var val:* = this.parse();
-		  this.expect('dedent', 'document not properly dedented');
+		  if(!this.peekType('eof')) this.expect('dedent', 'document not properly dedented');
 		  return val;
 		}
 
@@ -216,11 +222,12 @@ package dupin.parsers.yaml
 		  while (this.peekType('id') && (id = this.advanceValue())) {
 		    this.expect(':', 'expected semi-colon after id')
 		    this.ignoreSpace()
-		    if (this.accept('indent'))
-		      hash[id] = this.parse(),
-		      this.expect('dedent', 'hash not properly dedented')
-		    else
+		    if (this.accept('indent')) {
+		      hash[id] = this.parse();
+			  if(!this.peekType('eof')) this.expect('dedent', 'hash not properly dedented')
+		    } else {
 		      hash[id] = this.parse()
+			}
 		    this.ignoreSpace()
 		  }
 		  return hash;
@@ -256,12 +263,13 @@ package dupin.parsers.yaml
 		protected function parseMultilineString():String {
 			var result:String="";
 			this.advanceValue(); //ignore first | (pipe)
-			while (!this.accept('dedent')) {
-				this.ignoreWhitespace();
-				result += this.advanceValue() + "\n";
+			var val:String = "";
+			while(this.peekType('string') && (val = this.advanceValue())){
+				result += val + "\n";
+				ignoreWhitespace();
 			}
-			//Remove last space
 			result = result.substr(0, result.length-1);
+			trace("MULTI " + this.tokens[0])
 			
 			return result;
 		}
@@ -276,11 +284,12 @@ package dupin.parsers.yaml
 		  var list:Array = [];
 		  while (this.accept('-')) {
 		    this.ignoreSpace();
-		    if (this.accept('indent'))
-		      list.push(this.parse()),
-		      this.expect('dedent', 'list item not properly dedented')
-		    else
+		    if (this.accept('indent')) {
+		      list.push(this.parse());
+		      if(!this.peekType('eof'))  this.expect('dedent', 'list item not properly dedented');
+		    } else {
 		      list.push(this.parse())
+		    }
 		    this.ignoreSpace();
 		  }
 		  return list;
@@ -310,7 +319,6 @@ package dupin.parsers.yaml
 		 *
 		 * @param  {string} str
 		 * @return {array}
-		 * @api private
 		 */
 
 		protected function tokenize(str:String):Array {
@@ -341,7 +349,7 @@ package dupin.parsers.yaml
 		              throw new SyntaxError('invalid indentation, got ' + indents + ' instead of ' + (lastIndents + 1) + " at " + context(str))
 		            else if (indents < lastIndents) {
 		              input = token[1].input
-		              token = ['dedent']
+		              token = ['dedent','']
 		              token.input = input
 		              while (--lastIndents > 0)
 		                stack.push(token)
@@ -358,6 +366,9 @@ package dupin.parsers.yaml
 		        throw new SyntaxError(context(str))
 		    ignore = false
 		  }
+		//Add EOF token
+		stack.push(['eof', ''])
+		
 		  return stack
 		}
 		
