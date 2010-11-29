@@ -22,7 +22,7 @@ package dupin.parsers.yaml
 
 		protected const grammarTokens:Array = [
 		  ['comment', /^#[^\n]*/],
-		  ['indent', /^\n(\s*)/],
+		  ['indent', /^\s*\n(\s*)/],
 		  ['space', /^\s+/],
 		  ['true', /^(enabled|true|yes|on)/],
 		  ['false', /^(disabled|false|no|off)/],
@@ -37,7 +37,8 @@ package dupin.parsers.yaml
 		  ['}', /^\}/],
 		  ['[', /^\[/],
 		  [']', /^\]/],
-		  ['-', /^\-/],
+      //['-', /^\-/],
+		  ['-', /^(\- )/],
 		  [':', /^[:]/],
 		  ['string', /^(.*)/],
 		]
@@ -174,7 +175,7 @@ package dupin.parsers.yaml
 		  switch (this.peek()[0]) {
 		    case 'doc':
 		      return this.parseDoc();
-		    case '-':
+  		    case '-':
 		      return this.parseList();
 		    case '{':
 		      return this.parseInlineHash();
@@ -222,13 +223,17 @@ package dupin.parsers.yaml
 		  while (this.peekType('id') && (id = this.advanceValue())) {
 		    this.expect(':', 'expected semi-colon after id')
 		    this.ignoreSpace()
-		    if (this.accept('indent')) {
+		    if (this.accept('indent'))
+		    {
+          //trace("YAML::parseHash() INDENT", id, this.tokens[0]);
 		      hash[id] = this.parse();
-				trace("YAML::parseHash()", this.tokens[0]);
-			  if(!this.peekType('eof')) this.expect('dedent', 'hash not properly dedented')
-		    } else {
-		      hash[id] = this.parse();
-			}
+    		  if(!this.peekType('eof')) this.expect('dedent', 'hash not properly dedented')
+		    } 
+		    else {
+          //trace("YAML::parseHash() ELSE", id, this.tokens[0]);
+          hash[id] = this.parse();
+          
+			  }
 		    this.ignoreSpace();
 		  }
 		  return hash;
@@ -264,7 +269,7 @@ package dupin.parsers.yaml
 			this.ignoreSpace();
 			this.expect('indent', "multiline string not properly indented");
 			while(!this.peekType('dedent') && (val = this.advanceValue())){
-				trace("YAML::parseMultilineString()", tokens[0]);
+        //trace("YAML::parseMultilineString()", tokens[0]);
 				result += val + "\n";
 				ignoreSpace();
 			}
@@ -285,9 +290,11 @@ package dupin.parsers.yaml
 		  while (this.accept('-')) {
 		    this.ignoreSpace();
 		    if (this.accept('indent')) {
+          //trace("YAML::parseList() IF");
 		      list.push(this.parse());
 		      if(!this.peekType('eof'))  this.expect('dedent', 'list item not properly dedented');
 		    } else {
+          //trace("YAML::parseList() ELSE");
 		      list.push(this.parse())
 		    }
 		    this.ignoreSpace();
@@ -324,7 +331,7 @@ package dupin.parsers.yaml
 		protected function tokenize(str:String):Array {
 		  var token:Array, captures:Array, ignore:Boolean, input:*,
 		      indents:int = 0, lastIndents:int = 0,
-		      stack:Array = [], inMultilineString:Boolean = false;
+		      stack:Array = [], inList:Boolean = false;
 		
 		  while (str.length) {
 		    for (var i:int = 0, len:int = grammarTokens.length; i < len; ++i)
@@ -338,25 +345,28 @@ package dupin.parsers.yaml
 		
 				
 				switch (token[0]) {
-				  case 'multilineString':
-					inMultilineString = true;
-					break;
 		          case 'comment':
 		            ignore = true
+		            break;
+		          case '-':
+                //trace("YAML::tokenize() forcing list indent");
+		            indents = indents + 1;
+		            stack.push(token);
+		            token = ['indent','  '];
 		            break;
 		          case 'indent':
 		            lastIndents = indents
 		            indents = token[1][1].length / 2
+                //trace("YAML::tokenize() INDENT --- ", indents);
 		            if (indents === lastIndents)
-		              ignore = true
+		              ignore = true//, trace("IGNORE")
 		            else if (indents > lastIndents + 1)
 		              throw new SyntaxError('invalid indentation, got ' + indents + ' instead of ' + (lastIndents + 1) + " at " + context(str))
 		            else if (indents < lastIndents) {
-						//trace("YAML::tokenize()", "DEDENT");
+                  //trace("YAML::tokenize()", "DEDENT");
 		              input = token[1].input;
 		              token = ['dedent',''];
 		              token.input = input;
-					  inMultilineString = false;
 		              while (--lastIndents > indents)
 		                stack.push(token);
 		            }
@@ -367,21 +377,30 @@ package dupin.parsers.yaml
 		
 			if (!ignore)
 				if (token) {
-					//if(inMultilineString && token[0] != 'multilineString')
-					//	token[0] = 'string';
 					stack.push(token);
 					token = null;
 				} else {
 					throw new SyntaxError(context(str))
 				}
-					
-			
 		    ignore = false
 		  }
-		//Add EOF token
-		stack.push(['eof', ''])
-		trace("YAML::tokenize()", stack.join("#\n"));
+		  //Add EOF token
+		  stack.push(['eof', ''])
+      //traceTokens(stack);
 		  return stack;
+		}
+		
+		/**
+		 * Temporary debugging method
+		 * @param stack Array 
+		 */
+		public function traceTokens(stack:Array):void
+		{
+		  for each (var tkn:Object in stack)
+		  {
+        var valueStr:String = (tkn[1] is Array)?""+tkn[1][0]:"";
+		    trace("[ "+tkn[0]+" ]  "+valueStr);
+		  }
 		}
 		
 
