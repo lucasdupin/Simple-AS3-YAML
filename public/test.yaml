@@ -1,22 +1,30 @@
-name: 'loader'
+id: 'loader'
 servicePath: /
 key: my duh dah dih with spaces
 bool1: on
 parameters:
-	basePath: "." # The Application's base path
-	#Comment
-	commentTest1: "C# is an interesting language"
-	commentTest2: "I hate C#"
-	commentTest3: "I love A#" # Another comment
-	commentTest4: "Maybe F# is better" # Not "creative" at all
-	friendsServicePath: "%(servicePath)s/friends.json"
-	questionSendingServicePath: "%(servicePath)s/quiz/[group]/[question].json"
-	answerServicePath: "%(servicePath)squiz/answers.json"
-	idWithSpace : "%(servicePath)squiz/answers.json"
-	nestedObject:
-		firstProperty: ok
-		secondProperty: my second property
-	multilineText: |
-		"Yooooo"
-		"Multiline!"
-last: ok
+  basePath: "."
+  #Comment
+  userDataServicePath: %(servicePath)s/users.json
+  friendsServicePath: "%(servicePath)s/friends.json" #comment
+  questionSendingServicePath: "%(servicePath)s/quiz/[group]/[question].json"
+  answerServicePath: "%(servicePath)squiz/answers.json"
+  idWithSpace : "%(servicePath)squiz/answers.json"
+  nestedObject:
+    firstProperty: "ok"
+    secondProperty: my second property
+    # nestedWithNestedArray:
+    #   - id: service1
+    #     url: url1
+  array:
+   - item1
+   - item2
+   - [0, 1, 2, 3]
+  multineString: |
+    Dah
+    Deh
+multineString: |
+  Another
+  come
+  on
+yo: yeah
