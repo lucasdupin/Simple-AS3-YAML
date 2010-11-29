@@ -5,24 +5,26 @@ bool1: on
 parameters:
   basePath: "."
   #Comment
-  userDataServicePath: "%(servicePath)s/users.json"
+  userDataServicePath: %(servicePath)s/users.json
   friendsServicePath: "%(servicePath)s/friends.json" #comment
   questionSendingServicePath: "%(servicePath)s/quiz/[group]/[question].json"
   answerServicePath: "%(servicePath)squiz/answers.json"
   idWithSpace : "%(servicePath)squiz/answers.json"
   nestedObject:
-   firstProperty: ok
-   secondProperty: my second property
-   nestedInsideNested:
-     val1: |
-      Multiline
-      String
-     val2: 4
+    firstProperty: "ok"
+    secondProperty: my second property
+    # nestedWithNestedArray:
+    #   - id: service1
+    #     url: url1
   array:
    - item1
    - item2
    - [0, 1, 2, 3]
-  multilineString: |
-    Duh
+  multineString: |
     Dah
-    Dih
+    Deh
+multineString: |
+  Another
+  come
+  on
+yo: yeah
