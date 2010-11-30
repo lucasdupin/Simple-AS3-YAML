@@ -13,9 +13,9 @@ parameters:
   nestedObject:
     firstProperty: "ok"
     secondProperty: my second property
-    # nestedWithNestedArray:
-    #   - id: service1
-    #     url: url1
+    nestedWithNestedArray:
+      - id: service1
+        url: url1
   array:
    - item1
    - item2
